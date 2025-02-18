@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <!-- Aggiunto per una migliore gestione sui dispositivi mobili -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smaltimento Rifiuti - Comune di Verona</title>
+  <!-- Includiamo un font Google per un look più moderno -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    p.description {
+      text-align: center;
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 30px;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 15px;
+      font-size: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus {
+      border-color: #66a6ff;
+      outline: none;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      background-color: #66a6ff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #468de0;
+    }
+    #result {
+      margin-top: 20px;
+    }
+    .result-item {
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .result-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .result-item strong {
+      color: #333;
+    }
+    @media (max-width: 600px) {
+      .input-group {
+        flex-direction: column;
+      }
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Smaltimento Rifiuti</h1>
+    <p class="description">
+      Inserisci il nome del rifiuto per scoprire come smaltirlo correttamente secondo il dizionario del Comune di Verona.
+    </p>
+    <div class="input-group">
+      <input type="text" id="wasteInput" placeholder="Es. Acetone (contenitore vuoto e lavato)">
+      <button id="searchBtn" type="button">Cerca</button>
+    </div>
+    <div id="result"></div>
+  </div>
+  <script>
+    // Dizionario dei rifiuti preso integralmente dal documento "Dizionario dei Rifiuti 2023"
+    const wasteDictionary = [
+      { term: "Abiti usati", disposal: "Raccolta indumenti" },
+      { term: "Accendino", disposal: "Secco – Rifiuti misti" },
+      { term: "Acetone (contenitore vuoto e lavato)", disposal: "Multi plastica / lattine" },
+      { term: "Acidi (contenitore sporco)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Acidi (contenitore vuoto e lavato)", disposal: "Multi plastica / lattine" },
+      { term: "Acquaragia (contenitore sporco)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Acquaragia (contenitore vuoto e lavato)", disposal: "Multi plastica / lattine" },
+      { term: "Acquario", disposal: "Ecocentro" },
+      { term: "Addobbi natalizi", disposal: "Secco – Rifiuti misti" },
+      { term: "Adesivi", disposal: "Secco – Rifiuti misti" },
+      { term: "Agenda", disposal: "Carta" },
+      { term: "Ago con cappuccio", disposal: "Secco – Rifiuti misti" },
+      { term: "Alcool (contenitore vuoto)", disposal: "Multi plastica / lattine" },
+      { term: "Alimenti avariati", disposal: "Umido – Organico" },
+      { term: "Alluminio", disposal: "Multi plastica / lattine" },
+      { term: "Amianto", disposal: "Chiedere informazioni al numero verde AMIA" },
+      { term: "Ammoniaca (contenitore sporco)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Ammoniaca (contenitore vuoto e lavato)", disposal: "Multi plastica / lattine" },
+      { term: "Annaffiatoio", disposal: "Multi plastica / lattine" },
+      { term: "Antenna del televisore", disposal: "Ecocentro" },
+      { term: "Antenna parabolica", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Antiparassitari (contenitore vuoto)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Aquiloni", disposal: "Secco – Rifiuti misti" },
+      { term: "Armadi", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Articoli per l’edilizia (es. tubi)", disposal: "Ecocentro (piccole quantità)" },
+      { term: "Asciugacapelli", disposal: "Ecocentro / Ecomobile" },
+      { term: "Aspirapolvere", disposal: "Ecocentro / Ecomobile" },
+      { term: "Asse da stiro", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Assorbenti", disposal: "Secco – Rifiuti misti" },
+      { term: "Astucci", disposal: "Secco – Rifiuti misti" },
+      { term: "Attaccapanni in ferro", disposal: "Multi plastica / lattine" },
+      { term: "Attaccapanni in legno", disposal: "Ecocentro / Ecomobile" },
+      { term: "Attaccapanni in plastica", disposal: "Secco – Rifiuti misti" },
+      { term: "Auricolari", disposal: "Secco – Rifiuti misti" },
+      { term: "Avanzi di cibo", disposal: "Umido – Organico" },
+      { term: "Barattoli di vernice e solventi", disposal: "Ecocentro / Ecomobile" },
+      { term: "Barattoli in acciaio (vuoti e puliti)", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli in alluminio e acciaio (per olio, pelati, tonno, ecc.)", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli in latta (scatole di pelati, ecc.)", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli in plastica di prodotti vari", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli per alimenti in polvere", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli per articoli da cancelleria", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli per detersivi", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli per rullini fotografici", disposal: "Multi plastica / lattine" },
+      { term: "Barattoli per salviette umide", disposal: "Multi plastica / lattine" },
+      { term: "Barattolini di crema", disposal: "Multi plastica / lattine" },
+      { term: "Barre da imballaggio in polistirolo espanso", disposal: "Multi plastica / lattine" },
+      { term: "Batterie cellulare", disposal: "Ecocentro / Ecomobile" },
+      { term: "Batterie per auto", disposal: "Ecocentro" },
+      { term: "Battiscopa in legno", disposal: "Ecocentro" },
+      { term: "Batuffoli e bastoncini di cotone", disposal: "Secco – Rifiuti misti" },
+      { term: "Bauli", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Bicchieri di carta o cartoncino puliti", disposal: "Carta" },
+      { term: "Bicchieri e coppette in materiale compostabile (ad es. cellulosa, amido di mais, ecc.)", disposal: "Umido – Organico" },
+      { term: "Bicchieri in cristallo", disposal: "Secco – Rifiuti misti" },
+      { term: "Bicchieri in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Bicchieri in vetro", disposal: "Secco – Rifiuti misti" },
+      { term: "Biciclette", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Bilancia pesa persone", disposal: "Ecocentro / Ecomobile" },
+      { term: "Blister medicinali in plastica", disposal: "Multi plastica / lattine (se vuoto, altrimenti consegnare in farmacia)" },
+      { term: "Bombolette spray con simbolo di pericolo T e/o F (contenitore vuoto)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Bombolette spray non pericolose (contenitore vuoto)", disposal: "Multi plastica / lattine" },
+      { term: "Borsa dell’acqua calda", disposal: "Secco – Rifiuti misti" },
+      { term: "Borse di plastica", disposal: "Multi plastica / lattine" },
+      { term: "Borse in cuoio", disposal: "Raccolta indumenti" },
+      { term: "Bottiglie di plastica per acqua, olio, succhi", disposal: "Multi plastica / lattine" },
+      { term: "Bottiglie in vetro", disposal: "Campana di vetro" },
+      { term: "Box doccia", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Box per bambini", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Brick per succo di frutta, tè (senza cannuccia)", disposal: "Carta" },
+      { term: "Brocche di vetro", disposal: "Campana di vetro" },
+      { term: "Buste di carta", disposal: "Carta" },
+      { term: "Buste in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Bustine di tè", disposal: "Umido – Organico" },
+      { term: "Caffettiera", disposal: "Multi plastica / lattine" },
+      { term: "Calcinacci", disposal: "Ecocentro (piccole quantità)" },
+      { term: "Calcolatrici con componenti elettroniche", disposal: "Ecocentro / Ecomobile" },
+      { term: "Calze di nylon, lana, cotone", disposal: "Raccolta indumenti" },
+      { term: "Candeggina (contenitore vuoto e lavato)", disposal: "Multi plastica / lattine" },
+      { term: "Candela", disposal: "Secco – Rifiuti misti" },
+      { term: "Candele / Contenitori in plastica per candele", disposal: "Secco – Rifiuti misti" },
+      { term: "Canne da pesca", disposal: "Ecocentro / Ecomobile" },
+      { term: "Canne per irrigazione", disposal: "Secco – Rifiuti misti" },
+      { term: "Cannucce", disposal: "Secco – Rifiuti misti" },
+      { term: "Canovacci", disposal: "Raccolta indumenti" },
+      { term: "Capelli", disposal: "Secco – Rifiuti misti" },
+      { term: "Cappelli", disposal: "Raccolta indumenti" },
+      { term: "Capsule per macchinette caffè", disposal: "Secco – Rifiuti misti" },
+      { term: "Carbone spento", disposal: "Umido – Organico" },
+      { term: "Cards plastificate", disposal: "Secco – Rifiuti misti" },
+      { term: "Carica batterie", disposal: "Ecocentro / Ecomobile" },
+      { term: "Carrozzine", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Carta assorbente da cucina (scottex)", disposal: "Umido – Organico" },
+      { term: "Carta carbone", disposal: "Secco – Rifiuti misti" },
+      { term: "Carta cerata", disposal: "Secco – Rifiuti misti" },
+      { term: "Carta da forno", disposal: "Secco – Rifiuti misti" },
+      { term: "Carta delle caramelle", disposal: "Multi plastica / lattine" },
+      { term: "Carta patinata", disposal: "Multi plastica / lattine" },
+      { term: "Carta per affettati", disposal: "Secco – Rifiuti misti" },
+      { term: "Carta per formaggio", disposal: "Secco – Rifiuti misti" },
+      { term: "Carta plastificata", disposal: "Secco – Rifiuti misti" },
+      { term: "Carta sporca di colla o altre sostanze", disposal: "Secco – Rifiuti misti" },
+      { term: "Carta stagnola (alluminio)", disposal: "Multi plastica / lattine" },
+      { term: "Carta umida imbevuta di liquidi organici (sugo, olio, ecc.)", disposal: "Umido – Organico" },
+      { term: "Carta vetrata", disposal: "Secco – Rifiuti misti" },
+      { term: "Cartoncino", disposal: "Carta" },
+      { term: "Cartongesso", disposal: "Centri di smaltimento autorizzati" },
+      { term: "Cartone da imballaggio", disposal: "Carta" },
+      { term: "Cartone della pizza", disposal: "Carta" },
+      { term: "Cartone per alimenti - tetrapak (per latte, succhi di frutta, ecc.)", disposal: "Carta" },
+      { term: "Carta", disposal: "Carta" },
+      { term: "Cartoni pizza sporchi", disposal: "Secco – Rifiuti misti" },
+      { term: "Cartucce per stampanti", disposal: "Ecocentro / Ecomobile" },
+      { term: "Casco moto e bici", disposal: "Secco – Rifiuti misti" },
+      { term: "Cassette audio e video", disposal: "Secco – Rifiuti misti" },
+      { term: "Cassette di legno", disposal: "Ecocentro / Ecomobile" },
+      { term: "Cassette di plastica", disposal: "Multi plastica / lattine / Ecocentro" },
+      { term: "Cassette per ortofrutta e carni", disposal: "Multi plastica / lattine / Ecocentro" },
+      { term: "Cavatappi", disposal: "Ecocentro / Ecomobile" },
+      { term: "Cavi elettrici", disposal: "Ecocentro / Ecomobile" },
+      { term: "Cd e cd-rom", disposal: "Secco – Rifiuti misti" },
+      { term: "Cellophane", disposal: "Multi plastica / lattine" },
+      { term: "Cenere spenta", disposal: "Umido – Organico" },
+      { term: "Cera", disposal: "Secco – Rifiuti misti" },
+      { term: "Ceramica", disposal: "Secco / Ecocentro" },
+      { term: "Cerini", disposal: "Secco – Ecocentro" },
+      { term: "Cerotti", disposal: "Secco – Ecocentro" },
+      { term: "Chiavette usb", disposal: "Ecocentro / Ecomobile" },
+      { term: "Chiavi in metallo", disposal: "Multi plastica / lattine" },
+      { term: "Chiodi", disposal: "Ecocentro / Ecomobile" },
+      { term: "Ciabatte", disposal: "Secco – Rifiuti misti" },
+      { term: "Cialde caffè", disposal: "Secco – Rifiuti misti" },
+      { term: "Cinture in plastica, stoffa e cuoio", disposal: "Raccolta indumenti" },
+      { term: "Ciuccio", disposal: "Secco – Rifiuti misti" },
+      { term: "Computer", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Conchiglie e molluschi", disposal: "Umido – Organico" },
+      { term: "Confezioni delle merendine", disposal: "Multi plastica / lattine" },
+      { term: "Confezioni in cartoncino (ad es. pasta, dentifricio, cereali, ecc.)", disposal: "Carta" },
+      { term: "Confezioni in plastica rigide o flessibili", disposal: "Multi plastica / lattine" },
+      { term: "Congelatori", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Contenitore borotalco", disposal: "Multi plastica / lattine" },
+      { term: "Contenitore etichettato con simbolo Pericolo", disposal: "Ecocentro / Ecomobile" },
+      { term: "Contenitore pasta abrasiva", disposal: "Multi plastica / lattine" },
+      { term: "Contenitore smalto", disposal: "Ecocentro / Ecomobile" },
+      { term: "Contenitori in plastica (bacinelle, terrine, ecc.)", disposal: "Multi plastica / lattine" },
+      { term: "Contenitori per alimenti in alluminio e acciaio", disposal: "Multi plastica / lattine" },
+      { term: "Contenitori per alimenti in vetro", disposal: "Campana di vetro" },
+      { term: "Contenitori per bibite (lattine)", disposal: "Multi plastica / lattine" },
+      { term: "Coperchi metallici", disposal: "Multi plastica / lattine" },
+      { term: "Coperchietti dei barattoli di yogurt", disposal: "Multi plastica / lattine" },
+      { term: "Coperte usate", disposal: "Raccolta indumenti" },
+      { term: "Copertoni di automobili", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Coppette del gelato di carta pulite", disposal: "Carta" },
+      { term: "Coppette del gelato di plastica pulite", disposal: "Multi plastica / lattine" },
+      { term: "Corda", disposal: "Secco – Rifiuti misti" },
+      { term: "Cornici in legno", disposal: "Ecocentro / Ecomobile" },
+      { term: "Cosmetici", disposal: "Secco – Rifiuti misti" },
+      { term: "Cosmetici (contenitore plastica)", disposal: "Multi plastica e lattine" },
+      { term: "Cosmetici (contenitore altri materiali)", disposal: "Secco – Rifiuti misti" },
+      { term: "Cotone usato", disposal: "Secco – Rifiuti misti" },
+      { term: "Cotton fioc compostabile", disposal: "Umido – Organico" },
+      { term: "Cotton fioc con parti in plastica", disposal: "Secco – Rifiuti misti" },
+      { term: "Cover di cellulari", disposal: "Secco – Rifiuti misti" },
+      { term: "Cravatte", disposal: "Raccolta indumenti" },
+      { term: "Cristallo", disposal: "Secco – Rifiuti misti" },
+      { term: "Cucce per animali domestici", disposal: "Ecocentro" },
+      { term: "Cuscini", disposal: "Secco – Rifiuti misti" },
+      { term: "Custodie per cd, musicassette, videocassette", disposal: "Secco – Rifiuti misti" },
+      { term: "Damigiane", disposal: "Ecocentro / Ecomobile" },
+      { term: "Dentifricio (tubetto vuoto)", disposal: "Multi plastica / lattine" },
+      { term: "Deodorante per auto", disposal: "Secco – Rifiuti misti" },
+      { term: "Deodorante personale con contenitore in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Deodorante personale con contenitore in vetro", disposal: "Campana di vetro" },
+      { term: "Detersivo (flacone vuoto e pulito)", disposal: "Multi plastica / lattine" },
+      { term: "Detersivo (imballaggio cartone)", disposal: "Contenitore per carta e cartone" },
+      { term: "Detersivo (sacchetto sporco)", disposal: "Secco – Rifiuti misti" },
+      { term: "Detersivo (sacchetto vuoto e pulito)", disposal: "Multi plastica / lattine" },
+      { term: "Diapositive", disposal: "Secco – Rifiuti misti" },
+      { term: "Dischetti per computer", disposal: "Secco – Rifiuti misti" },
+      { term: "Dischi in vinile", disposal: "Secco – Rifiuti misti" },
+      { term: "Diserbanti e disinfestanti", disposal: "Ecocentro / Ecomobile" },
+      { term: "Dispensatori per alimenti vuoti e puliti (creme, salse, yogurt)", disposal: "Multi plastica / lattine" },
+      { term: "Divano", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Dvd", disposal: "Secco – Rifiuti misti" },
+      { term: "Elastici", disposal: "Secco – Rifiuti misti" },
+      { term: "Elettrodomestici", disposal: "Vedi a ogni singola voce / Ecocentro" },
+      { term: "Estintori", disposal: "Rivenditori autorizzati" },
+      { term: "Eternit", disposal: "Chiedi informazioni al numero verde AMIA" },
+      { term: "Etichette adesive", disposal: "Secco – Rifiuti misti" },
+      { term: "Etichette di indumenti", disposal: "Secco – Rifiuti misti" },
+      { term: "Evidenziatori", disposal: "Secco – Rifiuti misti" },
+      { term: "Farmaci", disposal: "Consegna dei contenitori presso le Farmacie" },
+      { term: "Fazzoletti di carta sporchi", disposal: "Secco – Rifiuti misti" },
+      { term: "Feltrini", disposal: "Secco – Rifiuti misti" },
+      { term: "Ferro", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Fiale in plastica (vuote)", disposal: "Multi plastica / lattine" },
+      { term: "Fiammiferi", disposal: "Umido – Organico" },
+      { term: "Fili elettrici", disposal: "Ecocentro / Ecomobile" },
+      { term: "Film e pellicole da imballaggio in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Filo interdentale", disposal: "Secco – Rifiuti misti" },
+      { term: "Filtri di tè, caffè, camomilla", disposal: "Umido – Organico" },
+      { term: "Finestre piccole quantità", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Fiori finti", disposal: "Secco – Rifiuti misti" },
+      { term: "Fiori secchi e recisi", disposal: "Umido – Organico" },
+      { term: "Fitofarmaci", disposal: "Ecocentro / Ecomobile" },
+      { term: "Flaconi in plastica vuoti (detersivi, saponi)", disposal: "Multi plastica / lattine" },
+      { term: "Flaconi per alimenti vuoti (creme, salse)", disposal: "Multi plastica / lattine" },
+      { term: "Fogli di carta o cartone", disposal: "Carta" },
+      { term: "Fogli di protezione in alluminio delle cioccolate", disposal: "Multi plastica / lattine" },
+      { term: "Fogli in alluminio per uso domestico", disposal: "Multi plastica / lattine" },
+      { term: "Foglie", disposal: "Bidone del verde / Ecocentro" },
+      { term: "Fondi di caffè", disposal: "Umido – Organico" },
+      { term: "Forbici", disposal: "Multi plastica / lattine (nelle zone servite dal porta a porta, Ecocentro / Ecomobile)" },
+      { term: "Fotografie", disposal: "Secco – Rifiuti misti" },
+      { term: "Frigoriferi", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Ganci per chiudere i sacchetti", disposal: "Secco – Rifiuti misti" },
+      { term: "Garze sterili", disposal: "Secco – Rifiuti misti" },
+      { term: "Giocattoli", disposal: "Secco – Rifiuti misti" },
+      { term: "Giornali", disposal: "Carta" },
+      { term: "Girello per bambini", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Giubbetti catarifrangenti", disposal: "Raccolta indumenti" },
+      { term: "Gommapiuma", disposal: "Secco – Rifiuti misti" },
+      { term: "Graffette", disposal: "Secco – Rifiuti misti" },
+      { term: "Grattugia in plastica per alimenti", disposal: "Multi plastica / lattine" },
+      { term: "Guaina catramata", disposal: "Centri di smaltimento autorizzati" },
+      { term: "Guanti in pelle o lana", disposal: "Raccolta indumenti" },
+      { term: "Guanti in gomma, lattice, usa e getta", disposal: "Secco – Rifiuti misti" },
+      { term: "Guarnizioni", disposal: "Secco – Rifiuti misti" },
+      { term: "Gusci di crostacei", disposal: "Umido – Organico" },
+      { term: "Gusci di frutta secca", disposal: "Umido – Organico" },
+      { term: "Gusci d’uovo", disposal: "Umido – Organico" },
+      { term: "Imballaggi di carta e cartone", disposal: "Carta" },
+      { term: "Imballaggi in metallo", disposal: "Multi plastica / lattine" },
+      { term: "Imballaggi in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Imballaggi in polistirolo", disposal: "Multi plastica / lattine" },
+      { term: "Incensi", disposal: "Umido – Organico" },
+      { term: "Inerti in piccola quantità (ad es. ceramica, terracotta, piastrelle, mattoni, ecc.)", disposal: "Ecocentro" },
+      { term: "Infissi piccole quantità", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Insetticidi per uso domestico (barattoli vuoti e puliti)", disposal: "Secco – Rifiuti misti" },
+      { term: "Insetticidi per uso domestico (sporchi)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Lacche (contenitore vuoto)", disposal: "Multi plastica / lattine" },
+      { term: "Lacci per scarpe", disposal: "Raccolta indumenti" },
+      { term: "Lamette usa e getta", disposal: "Secco – Rifiuti misti" },
+      { term: "Lampadari", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Lampade", disposal: "Ecomobile / Ecocentro" },
+      { term: "Lampadine a basso consumo", disposal: "Ecocentro / Ecomobile" },
+      { term: "Lampadine a incandescenza", disposal: "Secco – Rifiuti misti" },
+      { term: "Lampadine a led", disposal: "Ecocentro / Ecomobile" },
+      { term: "Lampadine alogene", disposal: "Ecocentro / Ecomobile" },
+      { term: "Lana", disposal: "Raccolta indumenti" },
+      { term: "Lana di roccia/vetro", disposal: "Centri di smaltimento autorizzati" },
+      { term: "Lastre di vetro di piccole dimensioni", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Lastre raggi", disposal: "Secco / Ecocentro" },
+      { term: "Latta", disposal: "Multi plastica / lattine" },
+      { term: "Lattine in alluminio", disposal: "Multi plastica / lattine" },
+      { term: "Lattine in banda stagnata", disposal: "Multi plastica / lattine" },
+      { term: "Lavastoviglie", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Lavatrice", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Legno", disposal: "Ecocentro" },
+      { term: "Lenti a contatto", disposal: "Secco – Rifiuti misti" },
+      { term: "Lenti di occhiali", disposal: "Secco – Rifiuti misti" },
+      { term: "Lenzuola", disposal: "Raccolta indumenti" },
+      { term: "Lettiera naturale per animali", disposal: "Umido – Organico" },
+      { term: "Lettiera sintetica per animali", disposal: "Secco – Rifiuti misti" },
+      { term: "Lische di pesce", disposal: "Umido – Organico" },
+      { term: "Lucida scarpe", disposal: "Secco – Rifiuti misti" },
+      { term: "Lumini / Cera di lumino", disposal: "Secco – Rifiuti misti" },
+      { term: "Lumini / Contenitori in plastica per lumini", disposal: "Secco – Rifiuti misti" },
+      { term: "Macchina da cucire", disposal: "Ecocentro / Ecomobile" },
+      { term: "Macchina fotografica", disposal: "Ecocentro / Ecomobile" },
+      { term: "Mascherine", disposal: "Secco – Rifiuti misti" },
+      { term: "Materassi", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Matite", disposal: "Secco – Rifiuti misti" },
+      { term: "Mattonelle di ceramica", disposal: "Ecocentro (piccole quantità)" },
+      { term: "Mattoni", disposal: "Ecocentro (piccole quantità)" },
+      { term: "Medicinali scaduti", disposal: "Consegna dei contenitori presso le farmacie" },
+      { term: "Mercurio (termometri)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Mestoli di legno", disposal: "Ecocentro / Ecomobile" },
+      { term: "Microonde", disposal: "Ecocentro / Ecomobile" },
+      { term: "Mobili e mensole in legno", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Mollette", disposal: "Secco – Rifiuti misti" },
+      { term: "Monitor", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Motorini", disposal: "Autodemolizioni" },
+      { term: "Mouse", disposal: "Ecocentro / Ecomobile" },
+      { term: "Mozziconi di sigaretta", disposal: "Secco – Rifiuti misti" },
+      { term: "Musicassette", disposal: "Secco – Rifiuti misti" },
+      { term: "Nastri per fiori", disposal: "Secco – Rifiuti misti" },
+      { term: "Nastro adesivo", disposal: "Secco – Rifiuti misti" },
+      { term: "Negativi fotografici", disposal: "Secco – Rifiuti misti" },
+      { term: "Neon", disposal: "Ecocentro / Ecomobile" },
+      { term: "Nylon", disposal: "Multi plastica / lattine" },
+      { term: "Occhiali / Montatura occhiali", disposal: "Secco – Rifiuti misti" },
+      { term: "Oggetti in gomma", disposal: "Secco – Rifiuti misti" },
+      { term: "Pannolini", disposal: "Secco - Rifiuti misti" },
+      { term: "Ramaglie", disposal: "Ecocentro" },
+      { term: "Rasoi usa e getta", disposal: "Secco – Rifiuti misti" },
+      { term: "Reggette per legatura pacchi (in plastica)", disposal: "Multi plastica / lattine" },
+      { term: "Reti in plastica per frutta e verdura", disposal: "Multi plastica / lattine" },
+      { term: "Reti per letti", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Righelli", disposal: "Secco – Rifiuti misti" },
+      { term: "Riviste", disposal: "Carta" },
+      { term: "Rotolo interno alla carta igienica", disposal: "Carta" },
+      { term: "Rullino fotografico", disposal: "Secco – Rifiuti misti" },
+      { term: "Sacche per dialisi e per stomatizzati", disposal: "Secco – Rifiuti misti" },
+      { term: "Sacchetti di carta con interno plasticato", disposal: "Multi plastica / lattine" },
+      { term: "Sacchetti di plastica", disposal: "Multi plastica / lattine" },
+      { term: "Sacchetti per aspirapolvere", disposal: "Secco – Rifiuti misti" },
+      { term: "Sacchi e sacchetti in plastica (fuorché per materiale edile)", disposal: "Multi plastica / lattine" },
+      { term: "Sacchi per alimenti per animali", disposal: "Multi plastica / lattine" },
+      { term: "Sacchi per detersivi", disposal: "Multi plastica / lattine" },
+      { term: "Sacchi per prodotti di giardinaggio", disposal: "Multi plastica / lattine" },
+      { term: "Salviette", disposal: "Secco – Rifiuti misti" },
+      { term: "Scontrini in carta chimica", disposal: "Secco – Rifiuti misti" },
+      { term: "Scopa", disposal: "Secco – Rifiuti misti" },
+      { term: "Sdraio", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Secchielli in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Sedie", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Segature (piccole quantità)", disposal: "Umido – Organico" },
+      { term: "Sfalci di potatura (piccole quantità)", disposal: "Ecocentro" },
+      { term: "Sfalcio dell’erba del giardino", disposal: "Ecocentro – Servizio con bidone AMIA" },
+      { term: "Shoppers", disposal: "Multi plastica / lattine" },
+      { term: "Sigarette", disposal: "Secco – Rifiuti misti" },
+      { term: "Siringhe", disposal: "Secco (con l’apposito cappuccio sull’ago)" },
+      { term: "Smalti (T e/o F)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Solventi (T e/o F)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Spago", disposal: "Secco – Rifiuti misti" },
+      { term: "Spazzole", disposal: "Secco – Rifiuti misti" },
+      { term: "Spazzolini", disposal: "Secco – Rifiuti misti" },
+      { term: "Specchio", disposal: "Ecocentro" },
+      { term: "Spray (T e/o F)", disposal: "Ecocentro" },
+      { term: "Spugne", disposal: "Secco – Rifiuti misti" },
+      { term: "Spugne abrasive", disposal: "Secco – Rifiuti misti" },
+      { term: "Spugne per fiori", disposal: "Secco – Rifiuti misti" },
+      { term: "Spugne sintetiche", disposal: "Secco – Rifiuti misti" },
+      { term: "Stagnola", disposal: "Multi plastica / lattine" },
+      { term: "Stampante", disposal: "Ecocentro / Ecomobile" },
+      { term: "Stecchi in legno per gelati", disposal: "Umido – Organico" },
+      { term: "Stendini", disposal: "Ecocentro / Ecomobile" },
+      { term: "Stereo", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Stoffa", disposal: "Raccolta indumenti" },
+      { term: "Stoviglie", disposal: "Secco / Ecocentro" },
+      { term: "Stracci", disposal: "Raccolta indumenti" },
+      { term: "Stracci da cucina", disposal: "Secco – Rifiuti misti" },
+      { term: "Stracci unti da olio minerale", disposal: "Secco – Rifiuti misti" },
+      { term: "Stracci unti da sostanze chimiche", disposal: "Ecocentro / Ecomobile" },
+      { term: "Strumenti musicali", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Stuzzicadenti", disposal: "Umido – Organico" },
+      { term: "Sughero", disposal: "Ecocentro / Ecomobile" },
+      { term: "Sveglie", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tablet", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tagliere in legno", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tagliere in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Taglierini", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tamponi per timbri", disposal: "Secco – Rifiuti misti" },
+      { term: "Tanica in banda stagnata", disposal: "Ecocentro / Ecomobile" },
+      { term: "Taniche per uso domestico (no benzina)", disposal: "Multi plastica / lattine (fino a 5 litri)" },
+      { term: "Tappeti", disposal: "Secco / Ecocentro" },
+      { term: "Tappezzeria/tappeti", disposal: "Secco – Rifiuti misti" },
+      { term: "Tappi a corona", disposal: "Multi plastica / lattine" },
+      { term: "Tappi di barattoli in metallo", disposal: "Multi plastica / lattine" },
+      { term: "Tappi in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Tappi sughero", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tastiera del computer", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tavolo", disposal: "Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Tazze e tazzine in ceramica rotta", disposal: "Secco – Rifiuti misti" },
+      { term: "Telefono", disposal: "Ecocentro / Ecomobile" },
+      { term: "Televisore", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Tende in stoffa", disposal: "Raccolta indumenti" },
+      { term: "Tergicristalli rotti", disposal: "Secco – Rifiuti misti" },
+      { term: "Termoconvettori e termosifoni", disposal: "Ecocentro o telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Termometro", disposal: "Ecocentro / Ecomobile" },
+      { term: "Termometro mercurio digitale", disposal: "Ecocentro / Ecomobile" },
+      { term: "Terracotta", disposal: "Ecocentro" },
+      { term: "Tetra-pak", disposal: "Carta" },
+      { term: "Tintura per abiti, scarpe, capelli (contenitore pieno)", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tintura per abiti, scarpe, capelli (contenitore vuoto)", disposal: "Multi plastica / lattine" },
+      { term: "Toner", disposal: "Ecocentro / Ecomobile" },
+      { term: "Torcia", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tovaglioli di carta puliti", disposal: "Carta" },
+      { term: "Tovaglioli di carta usati", disposal: "Umido – Organico" },
+      { term: "Triciclo", disposal: "Ecocentro" },
+      { term: "Trielina", disposal: "Ecocentro / Ditta specializzata" },
+      { term: "Trucchi", disposal: "Secco – Rifiuti misti" },
+      { term: "Truciolati o residui di lavorazione del legno (piccole quantità)", disposal: "Umido – Organico" },
+      { term: "Trucioli di tempera della matita o pastelli", disposal: "Umido – Organico" },
+      { term: "Tubetti di colore", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tubetti di dentifricio", disposal: "Multi plastica / lattine" },
+      { term: "Tubetti per uso alimentare", disposal: "Multi plastica / lattine" },
+      { term: "Tubi fluorescenti", disposal: "Ecocentro / Ecomobile" },
+      { term: "Tubi in alluminio", disposal: "Ecocentro" },
+      { term: "Tubi in ferro", disposal: "Ecocentro" },
+      { term: "Tubi in gomma", disposal: "Secco – Rifiuti misti" },
+      { term: "Tubi in PVC per idraulico", disposal: "Secco / Ecocentro" },
+      { term: "Uncinetto", disposal: "Secco – Rifiuti misti" },
+      { term: "Unghie", disposal: "Secco – Rifiuti misti" },
+      { term: "Uova", disposal: "Umido – Organico" },
+      { term: "Valigie", disposal: "Secco / Ecocentro – Telefona al numero 045 8069213 per ritiro rifiuti ingombranti" },
+      { term: "Vaschette e barattoli per gelati", disposal: "Multi plastica / lattine" },
+      { term: "Vaschette in alluminio per alimenti", disposal: "Multi plastica / lattine" },
+      { term: "Vaschette in carta portauova", disposal: "Carta" },
+      { term: "Vaschette in plastica portauova", disposal: "Multi plastica / lattine" },
+      { term: "Vasetti degli omogeneizzati", disposal: "Campana di vetro" },
+      { term: "Vasi in ceramica", disposal: "Ecocentro / Secco" },
+      { term: "Vasi in plastica", disposal: "Multi plastica / lattine" },
+      { term: "Vasi in terracotta", disposal: "Secco / Ecocentro" },
+      { term: "Vasi in vetro", disposal: "Campana di vetro" },
+      { term: "Vassoi e confezioni in cartoncino", disposal: "Carta" },
+      { term: "Veneziane", disposal: "Ecocentro" },
+      { term: "Ventilatori", disposal: "Ecocentro / Ecomobile" },
+      { term: "Verdura avariata", disposal: "Umido – Organico" },
+      { term: "Vernici", disposal: "Ecocentro / Ecomobile" },
+      { term: "Vetro (no finestre/infissi)", disposal: "Campana di vetro" },
+      { term: "Videocassette", disposal: "Secco – Rifiuti misti" },
+      { term: "Videogiochi", disposal: "Ecocentro / Ecomobile" },
+      { term: "Videoregistratore", disposal: "Ecocentro / Ecomobile" },
+      { term: "Zaini", disposal: "Raccolta indumenti" },
+      { term: "Zanzariere", disposal: "Secco / Ecocentro" },
+      { term: "Zappa", disposal: "Ecocentro / Ecomobile" },
+      { term: "Zerbino", disposal: "Secco – Rifiuti misti" },
+      { term: "Zoccoli", disposal: "Secco – Rifiuti misti" }
+    ];
+    
+    function searchWaste() {
+      const input = document.getElementById('wasteInput').value.toLowerCase().trim();
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "";
+      
+      if (input === "") {
+        resultDiv.innerHTML = "<p style='text-align:center; color:#666;'>Inserisci il nome del rifiuto.</p>";
+        return;
+      }
+      
+      const results = wasteDictionary.filter(item => item.term.toLowerCase().includes(input));
+      
+      if (results.length > 0) {
+        results.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'result-item';
+          div.innerHTML = `<strong>${item.term}</strong><br><span style="color:#555;">Smaltimento: ${item.disposal}</span>`;
+          resultDiv.appendChild(div);
+        });
+      } else {
+        resultDiv.innerHTML = "<p style='text-align:center; color:#666;'>Nessun risultato trovato.</p>";
+      }
+    }
+    
+    document.getElementById('searchBtn').addEventListener('click', searchWaste);
+    document.getElementById('wasteInput').addEventListener('keyup', function(e) {
+      if (e.key === "Enter") searchWaste();
+    });
+  </script>
+</body>
+</html>
