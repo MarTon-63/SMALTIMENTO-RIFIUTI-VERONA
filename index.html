@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <!-- Aggiunto per una migliore gestione sui dispositivi mobili -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smaltimento Rifiuti - Comune di Verona</title>
-  <!-- Includiamo un font Google per un look più moderno -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
+  <head>
+    <meta charset="UTF-8">
+    <!-- Aggiunto per una migliore gestione sui dispositivi mobili -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smaltimento Rifiuti - Comune di Verona</title>
+    <!-- Includiamo un font Google per un look più moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap"
+
+      rel="stylesheet">
+    <style>
     * {
       box-sizing: border-box;
     }
@@ -98,20 +100,23 @@
       }
     }
   </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Smaltimento Rifiuti</h1>
-    <p class="description">
-      Inserisci il nome del rifiuto per scoprire come smaltirlo correttamente secondo il Dizionario dei rifiuti - AMIA Verona (ultimo aggiornamento 2023).
-    </p>
-    <div class="input-group">
-      <input type="text" id="wasteInput" placeholder="Es. Acetone (contenitore vuoto e lavato)">
-      <button id="searchBtn" type="button">Cerca</button>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Smaltimento Rifiuti</h1>
+      <p style="text-align: center; font-size: 10px">
+      La web app è ideata esclusivamente per fini informativi, non
+      commerciali e senza fini di lucro.<br>Non è in alcun modo collegata al Comune
+      di Verona né all'AMIA di Verona.</p>
+      <p class="description"> Inserisci il nome del rifiuto per scoprire come
+        smaltirlo correttamente secondo il Dizionario dei rifiuti - AMIA Verona
+        (ultimo aggiornamento 2023). </p>
+      <div class="input-group"> <input id="wasteInput" placeholder="Es. Acetone (contenitore vuoto e lavato)"
+
+          type="text"> <button type="button" id="searchBtn">Cerca</button> </div>
+      <div id="result"></div>
     </div>
-    <div id="result"></div>
-  </div>
-  <script>
+    <script>
     // Dizionario dei rifiuti preso integralmente dal documento "Dizionario dei Rifiuti 2023"
     const wasteDictionary = [
       { term: "Abiti usati", disposal: "Raccolta indumenti" },
@@ -320,7 +325,7 @@
       { term: "Fiori secchi e recisi", disposal: "Umido – Organico" },
       { term: "Fitofarmaci", disposal: "Ecocentro / Ecomobile" },
       { term: "Flaconi in plastica vuoti (detersivi, saponi)", disposal: "Multi plastica / lattine" },
-      { term: "Flaconi per alimenti vuoti (creme, salse)", disposal: "Multi plastica / lattine" },
+      { term: "Flaconi per alimenti vuoti (creme, salse)", disposal: "Multi plastica / lattine" },
       { term: "Fogli di carta o cartone", disposal: "Carta" },
       { term: "Fogli di protezione in alluminio delle cioccolate", disposal: "Multi plastica / lattine" },
       { term: "Fogli in alluminio per uso domestico", disposal: "Multi plastica / lattine" },
@@ -565,5 +570,5 @@
       if (e.key === "Enter") searchWaste();
     });
   </script>
-</body>
+  </body>
 </html>
